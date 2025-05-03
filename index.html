@@ -13,6 +13,7 @@
             background-color: black;
             color: red;
             font-family: 'Courier New', monospace;
+            pointer-events: none; /* Disable all mouse interactions */
         }
         .fullscreen-lock {
             position: fixed;
@@ -27,6 +28,7 @@
             align-items: center;
             flex-direction: column;
             color: red;
+            pointer-events: auto; /* Enable interactions only on the virus screen */
         }
         .message-box {
             border: 2px solid red;
@@ -99,22 +101,27 @@
     </div>
 
     <script>
-        // Sound effects for typing or system failure
-        var typingSound = new Audio('https://www.soundjay.com/button/beep-07.wav');  // Replace with your sound URL
-        var systemFailureSound = new Audio('https://www.soundjay.com/button/beep-09.wav');  // Replace with your sound URL
+        // Disable mouse and keyboard interactions
+        document.body.style.pointerEvents = 'none';  // Disable all mouse interactions
+        document.documentElement.style.pointerEvents = 'none';
 
-        // Function to play a sound at intervals
-        function playSound() {
-            typingSound.play();
-        }
+        // Disable all keyboard inputs
+        document.addEventListener('keydown', function(event) {
+            event.preventDefault(); // Block any keypress
+        });
 
-        // Start playing typing sound every second
-        setInterval(playSound, 1000);
+        // Prevent opening new tabs/windows using common shortcuts
+        window.open = function() { return null; };
+
+        // Disable right-click menu
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
 
         // Lock keyboard, mouse, and exit buttons
         document.body.style.pointerEvents = 'none';  // Disables mouse interactions
 
-        // Disable back action (no browser history access)
+        // Prevent back action (no browser history access)
         window.history.pushState(null, '', window.location.href);
         window.onpopstate = function() {
             window.history.pushState(null, '', window.location.href);
@@ -127,9 +134,7 @@
                 document.getElementById('virusLockScreen').style.display = 'none';
                 // Re-enable pointer events
                 document.body.style.pointerEvents = 'auto';
-                // Stop all sounds
-                typingSound.pause();
-                systemFailureSound.pause();
+                document.documentElement.style.pointerEvents = 'auto'; // Allow browser interaction again
             }
         });
 
