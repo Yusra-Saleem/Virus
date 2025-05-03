@@ -1,174 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Lock Virus</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            background-color: black;
-            color: red;
-            font-family: 'Courier New', monospace;
-            pointer-events: none; /* Disable all mouse interactions */
-        }
-        .fullscreen-lock {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: red;
-            pointer-events: auto; /* Enable interactions only on the virus screen */
-        }
-        .message-box {
-            border: 2px solid red;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.8);
-            text-align: center;
-            width: 50%;
-            font-size: 18px;
-        }
-        .message-box h1 {
-            font-size: 30px;
-            font-weight: bold;
-        }
-        .buttons {
-            margin-top: 20px;
-        }
-        button {
-            background-color: black;
-            color: red;
-            border: 2px solid red;
-            padding: 10px 20px;
-            font-size: 18px;
-            margin: 10px;
-            cursor: not-allowed;
-        }
-        .button-disabled {
-            cursor: not-allowed;
-            background-color: #444;
-            border: 2px solid #666;
-        }
-        .flicker {
-            animation: flickerAnimation 1s infinite;
-        }
-        @keyframes flickerAnimation {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
-        /* Mobile-specific styling */
-        @media (max-width: 768px) {
-            body {
-                display: none;
-            }
-            .mobile-message {
-                color: red;
-                font-size: 24px;
-                text-align: center;
-                margin-top: 50%;
-                font-weight: bold;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>System Lock Virus</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: red;
+      font-family: 'Courier New', monospace;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none; /* Disable mouse clicks */
+      user-select: none;
+    }
+
+    #lockscreen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      z-index: 9999;
+      pointer-events: auto;
+    }
+
+    .box {
+      border: 3px solid red;
+      padding: 30px;
+      background-color: #000000cc;
+      border-radius: 10px;
+      box-shadow: 0 0 30px red;
+      width: 70%;
+    }
+
+    h1 {
+      font-size: 32px;
+      animation: flicker 1s infinite;
+    }
+
+    p {
+      font-size: 18px;
+    }
+
+    .disabled-btn {
+      background-color: #222;
+      color: red;
+      border: 2px solid red;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: not-allowed;
+      margin: 10px;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        display: none !important;
+      }
+      html::before {
+        content: "❌ This simulation is not supported on mobile devices.";
+        color: red;
+        font-size: 24px;
+        text-align: center;
+        display: block;
+        margin-top: 100px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Mobile block message -->
-    <div class="mobile-message" id="mobileMessage">This simulation is not supported on mobile devices.</div>
 
-    <div id="virusLockScreen" class="fullscreen-lock">
-        <div class="message-box">
-            <h1 class="flicker">💥 SYSTEM ERROR: VIRUS DETECTED 💥</h1>
-            <p>Your files are being deleted. DO NOT attempt to exit. Your data is at risk!</p>
-            <p>Press ESC to exit.</p>
-            <p id="countdownTimer">Files will be deleted in <span id="timerValue">10</span> seconds...</p>
-            <div class="buttons">
-                <button class="button-disabled" disabled>OK</button>
-                <button class="button-disabled" disabled>CANCEL</button>
-            </div>
-        </div>
+  <div id="lockscreen">
+    <div class="box">
+      <h1>💥 SYSTEM ERROR: VIRUS DETECTED 💥</h1>
+      <p id="countdown">Files will be deleted in <span id="time">10</span> seconds...</p>
+      <p>DO NOT try to close or switch. Press ESC to exit this lock.</p>
+      <button class="disabled-btn" disabled>OK</button>
+      <button class="disabled-btn" disabled>Cancel</button>
     </div>
+  </div>
 
-    <script>
-        // Disable mouse and keyboard interactions
-        document.body.style.pointerEvents = 'none';  // Disable all mouse interactions
-        document.documentElement.style.pointerEvents = 'none';
+  <audio id="beep" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
 
-        // Disable all keyboard inputs
-        document.addEventListener('keydown', function(event) {
-            event.preventDefault(); // Block any keypress
-        });
+  <script>
+    let timeLeft = 10;
+    const countdownSpan = document.getElementById('time');
+    const beep = document.getElementById('beep');
 
-        // Prevent opening new tabs/windows using common shortcuts
-        window.open = function() { return null; };
+    const countdownInterval = setInterval(() => {
+      timeLeft--;
+      countdownSpan.textContent = timeLeft;
+      beep.play();
 
-        // Disable right-click menu
-        document.addEventListener('contextmenu', function(event) {
-            event.preventDefault();
-        });
+      if (timeLeft <= 0) {
+        clearInterval(countdownInterval);
+        alert("⚠️ Files are being deleted... Press ESC to stop!");
+      }
+    }, 1000);
 
-        // Lock keyboard, mouse, and exit buttons
-        document.body.style.pointerEvents = 'none';  // Disables mouse interactions
+    // Disable right-click
+    document.addEventListener('contextmenu', e => e.preventDefault());
 
-        // Prevent back action (no browser history access)
-        window.history.pushState(null, '', window.location.href);
-        window.onpopstate = function() {
-            window.history.pushState(null, '', window.location.href);
-        };
+    // Block most keyboard input
+    document.addEventListener('keydown', function (e) {
+      const blocked = ['F12', 'F11', 'Tab', 'Alt', 'Control', 'Meta', 'Shift'];
+      if (blocked.includes(e.key) || (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+      }
 
-        // Only allow ESC key to exit (simulate a "lock")
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "Escape") {
-                // Simulate exit (remove lock screen)
-                document.getElementById('virusLockScreen').style.display = 'none';
-                // Re-enable pointer events
-                document.body.style.pointerEvents = 'auto';
-                document.documentElement.style.pointerEvents = 'auto'; // Allow browser interaction again
-            }
-        });
+      // Allow ESC to exit
+      if (e.key === "Escape") {
+        document.getElementById('lockscreen').style.display = 'none';
+        document.body.style.pointerEvents = 'auto';
+        document.removeEventListener('keydown', arguments.callee);
+        alert("✅ Virus exited. You're safe now.");
+      }
+    });
 
-        // Countdown Timer
-        var countdownValue = 10;
-        var countdownTimer = document.getElementById('timerValue');
+    // Block back/forward nav
+    history.pushState(null, null, location.href);
+    window.onpopstate = () => {
+      history.pushState(null, null, location.href);
+    };
 
-        var countdownInterval = setInterval(function() {
-            countdownValue--;
-            countdownTimer.textContent = countdownValue;
-            if (countdownValue <= 0) {
-                clearInterval(countdownInterval);
-                // After countdown ends, show a fake delete warning
-                setTimeout(function() {
-                    alert("⚠️ WARNING: Files are being deleted... Press ESC to exit!");
-                }, 500);
-            }
-        }, 1000);
+    // Stop new tabs via Ctrl+T / Ctrl+N
+    window.open = () => null;
 
-        // Fake file delete warning
-        setTimeout(function() {
-            alert("⚠️ WARNING: Files are being deleted... Press ESC to exit!");
-        }, 3000);
-
-        // Optional: Add a background flicker effect for realism
-        setInterval(function() {
-            document.body.style.backgroundColor = document.body.style.backgroundColor === 'black' ? '#1a0000' : 'black';
-        }, 1000);
-
-        // Mobile check and block
-        if (window.innerWidth <= 768) {
-            document.body.style.display = 'none';  // Hide the page content
-            document.getElementById('mobileMessage').style.display = 'block';  // Show mobile message
-        }
-    </script>
+    // Tab switch warning (optional)
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        alert("⚠️ Don't try to switch tabs! Virus is active.");
+      }
+    });
+  </script>
 </body>
 </html>
